@@ -1,9 +1,9 @@
 # from django.shortcuts import render
 import json
 import logging
-# from django.http import HttpResponse
 from django.http import JsonResponse
-from user.models import User
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 log = '%(lineno)d ** %(asctime)s ** %(message)s'
 logging.basicConfig(filename='user_views.log', filemode='a', format=log, level=logging.DEBUG)
@@ -13,13 +13,11 @@ def registration(request):
     try:
         data = json.loads(request.body)
         if request.method == 'POST':
-            user_registration = User.objects.create(username=data.get("username"),
-                                                    password=data.get("password"),
-                                                    first_name=data.get("first_name"),
-                                                    last_name=data.get("last_name"),
-                                                    email=data.get("email"),
-                                                    phone_number=data.get("phone_number"),
-                                                    location=data.get("location"))
+            user_registration = User.objects.create_user(username=data.get("username"),
+                                                         password=data.get("password"),
+                                                         email=data.get("email"),
+                                                         first_name=data.get("first_name"),
+                                                         last_name=data.get("last_name"))
             return JsonResponse({"message": f"Data save successfully {user_registration.username}",
                                  "data": {"id": user_registration.id}}, status=201)
         return JsonResponse({"message": "Method not allow"}, status=400)
@@ -32,7 +30,7 @@ def login(request):
     try:
         data = json.loads(request.body)
         if request.method == 'POST':
-            login_user = User.objects.filter(username=data.get("username"), password=data.get("password")).first()
+            login_user = authenticate(username=data.get("username"), password=data.get("password"))
             if login_user is not None:
                 return JsonResponse({'message': f'User {login_user.username} is successfully login'}, status=200)
             else:

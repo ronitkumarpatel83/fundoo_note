@@ -31,9 +31,9 @@ def registration(request):
 def login(request):
     try:
         data = json.loads(request.body)
-        print(data)
         if request.method == 'POST':
-            login_user = authenticate(username=data.get("username"), password=data.get("password"))
+            # login_user = authenticate(username=data.get("username"), password=data.get("password"))
+            login_user = authenticate(**data)
             if login_user is not None:
                 return JsonResponse({'message': f'User {login_user.username} is successfully login'}, status=200)
             else:
@@ -42,3 +42,15 @@ def login(request):
     except Exception as e:
         logging.exception(e)
         return JsonResponse({'message': 'Unexpected error'}, status=400)
+
+
+def change_password(request):
+    try:
+        data = json.loads(request.body)
+        user = User.objects.get(username=data.get('username'))
+        user.set_password(data.get('new_password'))
+        user.save()
+        return JsonResponse({'message': 'Successfully change new password'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({})

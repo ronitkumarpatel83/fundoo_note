@@ -12,6 +12,11 @@ logging.basicConfig(filename='user_views.log', filemode='a', format=log, level=l
 
 class RegistrationAPIView(APIView):
     def post(self, request):
+        """
+        Register user using post api and serializer
+        :param request:
+        :return:
+        """
         try:
             user_serializer = UserSerializer(data=request.data)
             user_serializer.is_valid(raise_exception=True)
@@ -25,6 +30,12 @@ class RegistrationAPIView(APIView):
 
 class LoginAPIView(APIView):
     def post(self, request):
+        """
+        Login user using post api
+        :param request:
+        :return:
+        """
+
         try:
             info = request.data
             login_user = authenticate(username=info.get("username"), password=info.get("password"))

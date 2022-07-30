@@ -5,16 +5,21 @@ from note.serializers import NotesSerializers
 from rest_framework.response import Response
 from rest_framework import status
 
-log = '%(lineno)d ** %(asctime)s ** %(message)s'
-logging.basicConfig(filename='note.log', filemode='a', format=log, level=logging.DEBUG)
+# log = '%(lineno)d ** %(asctime)s ** %(message)s'
+# logging.basicConfig(filename='note.log', filemode='a', format=log, level=logging.DEBUG)
 
 
 class NoteDetails(APIView):
 
     def get(self, request):
+        """
+        Using GET method here for getting data from table
+        :param request:
+        :return:
+        """
         try:
-            # notes = Note.objects.get(id=1)
-            notes = Note.objects.all()
+            # notes = Note.objects.get(id=1) # userid
+            notes = Note.objects.filter(user=request.GET.get('user_id'))
             serializer = NotesSerializers(instance=notes, many=True)
             return Response({'data': serializer.data}, status.HTTP_200_OK)
         except Exception as e:
@@ -22,6 +27,11 @@ class NoteDetails(APIView):
             return Response({'message': 'unexpected error'}, status=400)
 
     def post(self, request):
+        """
+        Storing data in table
+        :param request:
+        :return:
+        """
         try:
             # user = User.objects.get(pk=request.data.get('user'))
             # note = Note.objects.create(user=user, title=request.data.get('title'),
@@ -38,13 +48,18 @@ class NoteDetails(APIView):
             return Response({"message": "Unexpected error"}, status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
+        """
+        Updating data in table
+        :param request:
+        :return:
+        """
         try:
             notes = Note.objects.get(id=request.data.get('id'))
             print(notes)
             serializer = NotesSerializers(notes, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({'data': serializer.data}, status.HTTP_202_ACCEPTED)
+            return Response({'data': serializer.data}, status.HTTP_201_CREATED)
         except Note.DoesNotExist as e:
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status.HTTP_404_NOT_FOUND)
@@ -53,6 +68,11 @@ class NoteDetails(APIView):
             return Response({'message': 'unexpected error'}, status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
+        """
+        Deletong data from table
+        :param request:
+        :return:
+        """
         try:
             notes = Note.objects.get(id=request.data.get('id'))
             notes.delete()

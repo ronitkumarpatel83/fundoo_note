@@ -1,5 +1,4 @@
 import pytest
-import json
 from django.urls import reverse
 
 pytestmark = pytest.mark.django_db
@@ -30,7 +29,7 @@ class TestRegistrationAPI:
         data = {'username': 'ronit', 'password': '7777'}
         response = client.post(url, data, content_type="application/json")
         assert response.status_code == 200
-        assert response.data['message'] == f'User {user.username} is successfully login'
+        assert response.data['message'] == 'Login Successfully'
 
     @pytest.mark.django_db
     def test_response_as_login_failure(self, client, django_user_model):
@@ -49,6 +48,6 @@ class TestRegistrationAPI:
         data = {'username': 'ronit', 'password': '123'}
         response = client.post(url, data, content_type="application/json")
         assert response.status_code == 401
-        assert response.data['message'] == 'Invalid username/password'
+        assert response.data['message'] == 'User not registered'
 
 

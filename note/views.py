@@ -5,8 +5,7 @@ from note.serializers import NotesSerializers
 from rest_framework.response import Response
 from rest_framework import status
 
-# log = '%(lineno)d ** %(asctime)s ** %(message)s'
-# logging.basicConfig(filename='note.log', filemode='a', format=log, level=logging.DEBUG)
+logger = logging.getLogger('django')
 
 
 class NoteDetails(APIView):
@@ -33,11 +32,6 @@ class NoteDetails(APIView):
         :return:
         """
         try:
-            # user = User.objects.get(pk=request.data.get('user'))
-            # note = Note.objects.create(user=user, title=request.data.get('title'),
-            #                             description=request.data.get('description'))
-            # note = Note.objects.create(user_id=request.data.get('user'), title=request.data.get('title'),
-            #                             description=request.data.get('description'))
             serializer = NotesSerializers(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -60,9 +54,6 @@ class NoteDetails(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response({'data': serializer.data}, status.HTTP_201_CREATED)
-        except Note.DoesNotExist as e:
-            logging.exception(e)
-            return Response({'message': 'unexpected error'}, status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status.HTTP_400_BAD_REQUEST)

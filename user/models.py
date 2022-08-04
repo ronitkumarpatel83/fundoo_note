@@ -10,6 +10,7 @@ class User(AbstractUser):
     # email = models.EmailField(max_length=100, unique=True)
     phone_number = models.BigIntegerField()
     location = models.CharField(max_length=200)
+    is_verify = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'user'

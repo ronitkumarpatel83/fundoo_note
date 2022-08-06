@@ -4,12 +4,16 @@ from rest_framework.views import APIView
 from note.serializers import NotesSerializers
 from rest_framework.response import Response
 from rest_framework import status
+from user.utils import JWTService
+from note.utils import verify_token
 
-logger = logging.getLogger('django')
+log = '%(lineno)d : %(asctime)s : %(message)s'
+logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logging.DEBUG)
 
 
 class NoteDetails(APIView):
 
+    @verify_token
     def get(self, request):
         """
         Using GET method here for getting data from table
@@ -17,14 +21,15 @@ class NoteDetails(APIView):
         :return:
         """
         try:
-            # notes = Note.objects.get(id=1) # userid
-            notes = Note.objects.filter(user=request.GET.get('user_id'))
+            user_id = request.data.get('user')
+            notes = Note.objects.filter(user=user_id)
             serializer = NotesSerializers(instance=notes, many=True)
             return Response({'data': serializer.data}, status.HTTP_200_OK)
         except Exception as e:
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status=400)
 
+    @verify_token
     def post(self, request):
         """
         Storing data in table
@@ -32,6 +37,7 @@ class NoteDetails(APIView):
         :return:
         """
         try:
+            # print(request.data)
             serializer = NotesSerializers(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -41,6 +47,7 @@ class NoteDetails(APIView):
             logging.exception(e)
             return Response({"message": "Unexpected error"}, status.HTTP_400_BAD_REQUEST)
 
+    @verify_token
     def put(self, request):
         """
         Updating data in table
@@ -58,6 +65,7 @@ class NoteDetails(APIView):
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status.HTTP_400_BAD_REQUEST)
 
+    @verify_token
     def delete(self, request):
         """
         Deletong data from table

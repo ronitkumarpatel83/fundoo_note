@@ -135,29 +135,6 @@ EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 JWT_SECRET_KEY = 'secret'
-JWT_EXPIRING_TIME = datetime.now() + timedelta(minutes=60)
+JWT_EXPIRING_TIME = datetime.now() + timedelta(hours=1)
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'logfile.log',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-    'formatter': {
-        'simple': {
-            'format': '%(lineno)d : %(asctime)s : %(message)s',
-            'style': '{'
-        },
-    }
-}
+

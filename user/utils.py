@@ -1,5 +1,6 @@
 import jwt
 import logging
+from rest_framework import status
 from rest_framework.response import Response
 from django.conf import settings
 
@@ -24,7 +25,7 @@ class JWTService:
             return token_encoded
         except Exception as e:
             logging.exception(e)
-            return Response({'Message': 'Unexpected error'})
+            return Response({'Message': 'Unexpected error'}, status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def decode_token(token):
@@ -44,3 +45,4 @@ class JWTService:
         except Exception as e:
             logging.exception(e)
             return Response({'Message': 'Unexpected error'})
+

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+import jwt
 import logging
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
@@ -10,7 +10,8 @@ from user.models import User
 from user.utils import JWTService
 from django.conf import settings
 
-logger = logging.getLogger('django')
+log = '%(lineno)d : %(asctime)s : %(message)s'
+logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logging.DEBUG)
 
 
 class RegistrationAPIView(APIView):
@@ -38,6 +39,11 @@ class RegistrationAPIView(APIView):
         except Exception as e:
             logging.exception(e)
             return Response({"message": "Unexpected error"}, status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response({'message': serializer.data})
 
 
 class LoginAPIView(APIView):

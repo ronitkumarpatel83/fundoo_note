@@ -44,5 +44,5 @@ class JWTService:
             return Response({'Message': 'InvalidTokenError'})
         except Exception as e:
             logging.exception(e)
-            return Response({'Message': 'Unexpected error'})
+            return Response({'Message': 'Unexpected error'}, status.HTTP_400_BAD_REQUEST)
 

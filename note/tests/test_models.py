@@ -1,6 +1,7 @@
 import json
 import pytest
 from django.urls import reverse
+from note.models import Note
 
 pytestmark = pytest.mark.django_db
 """
@@ -11,7 +12,7 @@ pytest test_something.py::single_test  # single test function
 
 
 @pytest.fixture
-def authentication_user(client, django_user_model):
+def authentication_user(client, django_user_model, db):
     """
     creating user id for note app crud operation testing
     :param client:
@@ -22,8 +23,9 @@ def authentication_user(client, django_user_model):
                                                  location='odisha')
     url = reverse('login')
     data = {'username': 'ronit', 'password': '7777'}
-    client.post(url, data)
-    return user.id
+    response = client.post(url, data)
+    token = response.data.get('data').get('token')
+    return token, user.id
 
 
 class TestNoteAppCrudOperation:
@@ -40,10 +42,11 @@ class TestNoteAppCrudOperation:
         :param authentication_user:
         :return:
         """
-        user_id = authentication_user
+        token, user_id = authentication_user
+        print(token, user_id)
         url = reverse("notedetails")
         data = {"title": "tea", "description": "famous in india", "user": user_id}
-        response = client.post(url, data, content_type='application/json')
+        response = client.post(url, data, content_type='application/json', HTTP_TOKEN=token)
         assert response.status_code == 201
 
     @pytest.mark.django_db
@@ -54,16 +57,16 @@ class TestNoteAppCrudOperation:
         :param authentication_user:
         :return:
         """
-        user_id = authentication_user
+        token, user_id = authentication_user
         # create note
         url = reverse("notedetails")
         data = {"title": "masala tea", "description": "famous in india", "user": user_id}
-        response = client.post(url, data, content_type='application/json')
+        response = client.post(url, data, content_type='application/json', HTTP_TOKEN=token)
         assert response.status_code == 201
         # get note
         url = reverse('notedetails')
         url = url + '?user_id=' + str(user_id)
-        response = client.get(url, content_type='application/json')
+        response = client.get(url, content_type='application/json', HTTP_TOKEN=token)
         assert response.status_code == 200
 
     @pytest.mark.django_db
@@ -74,18 +77,18 @@ class TestNoteAppCrudOperation:
         :param authentication_user:
         :return:
         """
-        user_id = authentication_user
+        token, user_id = authentication_user
         # new note
         url = reverse("notedetails")
         data = {"title": "tea", "description": "famous in india", "user": user_id}
-        response = client.post(url, data, content_type='application/json')
+        response = client.post(url, data, content_type='application/json', HTTP_TOKEN=token)
         json_data = json.loads(response.content)
         note_id = json_data.get('data').get('id')
         assert response.status_code == 201
         # update note
         url = reverse("notedetails")
         data = {"id": note_id, "title": "coffee", "description": "Nestle", "user": user_id}
-        response = client.put(url, data, content_type='application/json')
+        response = client.put(url, data, content_type='application/json', HTTP_TOKEN=token)
         # json_data = json.loads(response.content)
         # print(json_data)
         assert response.status_code == 201
@@ -98,17 +101,17 @@ class TestNoteAppCrudOperation:
         :param authentication_user:
         :return:
         """
-        user_id = authentication_user
+        token, user_id = authentication_user
         # new note
         url = reverse('notedetails')
         data = {'title': 'chips', 'description': 'lays', "user": user_id}
-        response = client.post(url, data, content_type='application/json')
+        response = client.post(url, data, content_type='application/json', HTTP_TOKEN=token)
         json_data = json.loads(response.content)
         assert response.status_code == 201
         note_id = json_data.get('data').get('id')
         # Delete notes
         url = reverse("notedetails")
         data = {'id': note_id}
-        response = client.delete(url, data, content_type='application/json')
+        response = client.delete(url, data, content_type='application/json', HTTP_TOKEN=token)
         assert response.status_code == 204
         assert response.data == {'data': 'deleted'}

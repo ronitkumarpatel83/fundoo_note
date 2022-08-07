@@ -4,13 +4,16 @@ from rest_framework.views import APIView
 from note.serializers import NotesSerializers
 from rest_framework.response import Response
 from rest_framework import status
+from user.utils import JWTService
+from note.utils import verify_token
 
-# log = '%(lineno)d ** %(asctime)s ** %(message)s'
-# logging.basicConfig(filename='note.log', filemode='a', format=log, level=logging.DEBUG)
+log = '%(lineno)d : %(asctime)s : %(message)s'
+logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logging.DEBUG)
 
 
 class NoteDetails(APIView):
 
+    @verify_token
     def get(self, request):
         """
         Using GET method here for getting data from table
@@ -18,14 +21,15 @@ class NoteDetails(APIView):
         :return:
         """
         try:
-            # notes = Note.objects.get(id=1) # userid
-            notes = Note.objects.filter(user=request.GET.get('user_id'))
+            user_id = request.data.get('user')
+            notes = Note.objects.filter(user=user_id)
             serializer = NotesSerializers(instance=notes, many=True)
             return Response({'data': serializer.data}, status.HTTP_200_OK)
         except Exception as e:
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status=400)
 
+    @verify_token
     def post(self, request):
         """
         Storing data in table
@@ -33,11 +37,7 @@ class NoteDetails(APIView):
         :return:
         """
         try:
-            # user = User.objects.get(pk=request.data.get('user'))
-            # note = Note.objects.create(user=user, title=request.data.get('title'),
-            #                             description=request.data.get('description'))
-            # note = Note.objects.create(user_id=request.data.get('user'), title=request.data.get('title'),
-            #                             description=request.data.get('description'))
+            # print(request.data)
             serializer = NotesSerializers(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -47,6 +47,7 @@ class NoteDetails(APIView):
             logging.exception(e)
             return Response({"message": "Unexpected error"}, status.HTTP_400_BAD_REQUEST)
 
+    @verify_token
     def put(self, request):
         """
         Updating data in table
@@ -60,13 +61,11 @@ class NoteDetails(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response({'data': serializer.data}, status.HTTP_201_CREATED)
-        except Note.DoesNotExist as e:
-            logging.exception(e)
-            return Response({'message': 'unexpected error'}, status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status.HTTP_400_BAD_REQUEST)
 
+    @verify_token
     def delete(self, request):
         """
         Deletong data from table

@@ -135,6 +135,6 @@ EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 JWT_SECRET_KEY = 'secret'
-JWT_EXPIRING_TIME = datetime.now() + timedelta(hours=1)
+JWT_EXPIRING_TIME = datetime.now() + timedelta(hours=24)
 
 

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'user',
     'rest_framework',
     'note',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +150,14 @@ JWT_EXPIRING_TIME = datetime.now() + timedelta(hours=24)
 #
 # SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 # SESSION_CACHE_ALIAS = "default"
+
+
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Token',
+            'in': 'header'
+      }
+   }
+}

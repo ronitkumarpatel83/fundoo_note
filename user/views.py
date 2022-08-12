@@ -9,12 +9,28 @@ from django.core.mail import send_mail
 from user.models import User
 from user.utils import JWTService
 from django.conf import settings
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 log = '%(lineno)d : %(asctime)s : %(message)s'
 logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logging.DEBUG)
 
 
 class RegistrationAPIView(APIView):
+    @swagger_auto_schema(
+        operation_summary="registration",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
+                'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='first_name'),
+                'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='last_name'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='email'),
+                'phone_number': openapi.Schema(type=openapi.TYPE_STRING, description='phone_number'),
+                'location': openapi.Schema(type=openapi.TYPE_STRING, description='location'),
+            }
+        ))
     def post(self, request):
         """
         Register user using post api and serializer
@@ -40,6 +56,9 @@ class RegistrationAPIView(APIView):
             logging.exception(e)
             return Response({"message": "Unexpected error"}, status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        operation_summary="display",
+    )
     def get(self, request):
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
@@ -47,6 +66,15 @@ class RegistrationAPIView(APIView):
 
 
 class LoginAPIView(APIView):
+    @swagger_auto_schema(
+        operation_summary="login",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
+            }
+        ))
     def post(self, request):
         """
         Login user using post api
@@ -72,6 +100,9 @@ class VarifyUser(APIView):
     Validating the token if the user is valid or not
     """
 
+    @swagger_auto_schema(
+        operation_summary="get user"
+    )
     def get(self, request, token):
         try:
             decode_token = JWTService.decode_token(token=token)

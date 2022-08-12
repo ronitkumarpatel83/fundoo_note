@@ -5,6 +5,8 @@ from note.serializers import NotesSerializers
 from rest_framework.response import Response
 from rest_framework import status
 from note.utils import verify_token, RedisNoteAPI
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 log = '%(lineno)d : %(asctime)s : %(message)s'
 logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logging.DEBUG)
@@ -12,6 +14,7 @@ logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logg
 
 class NoteDetails(APIView):
 
+    @swagger_auto_schema(operation_summary="Fetch notes")
     @verify_token
     def get(self, request):
         """
@@ -21,17 +24,17 @@ class NoteDetails(APIView):
         """
         try:
             user_id = request.data.get('user')
-            # notes = Note.objects.filter(user=user_id)
-            # serializer = NotesSerializers(instance=notes, many=True)
-            # for key in serializer.data:
-            #     RedisNoteAPI().create_note(user_id, note_id=dict(key))
-            # data = [value for key, value in RedisNoteAPI().get_note(user_id).items()]
+            notes = Note.objects.filter(user=user_id)
+            serializer = NotesSerializers(instance=notes, many=True)
+            for key in serializer.data:
+                RedisNoteAPI().create_note(user_id, note_id=dict(key))
             data = RedisNoteAPI().get_note(user_id).values()
-            return Response({"data": data}, status=status.HTTP_200_OK)
+            return Response({"data": data, "Saved data": serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status=400)
 
+    @swagger_auto_schema(operation_summary="New note", request_body=NotesSerializers)
     @verify_token
     def post(self, request):
         """
@@ -51,6 +54,14 @@ class NoteDetails(APIView):
             logging.exception(e)
             return Response({"message": "Unexpected error"}, status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(operation_summary="Update notes", request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="id"),
+            'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
+            'description': openapi.Schema(type=openapi.TYPE_STRING, description="description")
+        }
+    ))
     @verify_token
     def put(self, request):
         """
@@ -69,6 +80,9 @@ class NoteDetails(APIView):
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(operation_summary="delete note", request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT, properties={
+            'id': openapi.Schema(type=openapi.TYPE_INTEGER, description="id")}))
     @verify_token
     def delete(self, request):
         """

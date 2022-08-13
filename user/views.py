@@ -46,7 +46,7 @@ class RegistrationAPIView(APIView):
             token = JWTService.encode_token(payload={'id': user_serializer.data.get("id"),
                                                      'username': user_serializer.data.get('username')
                                                      })
-            verify_user_task.delay(user_serializer.data.get('email'), token)
+            verify_user_task.delay(request.data.get('email'), token)
             return Response({"message": "Data save successfully ", "data": user_serializer.data}, status.HTTP_200_OK)
         except Exception as e:
             logging.exception(e)

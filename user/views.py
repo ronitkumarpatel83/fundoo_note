@@ -11,6 +11,8 @@ from user.utils import JWTService
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from user.email import Email
+from .tasks import verify_user_task
 
 log = '%(lineno)d : %(asctime)s : %(message)s'
 logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logging.DEBUG)
@@ -41,16 +43,10 @@ class RegistrationAPIView(APIView):
             user_serializer = UserSerializer(data=request.data)
             user_serializer.is_valid(raise_exception=True)
             user_serializer.save()
-            mail_subject = "Verification mail"
             token = JWTService.encode_token(payload={'id': user_serializer.data.get("id"),
                                                      'username': user_serializer.data.get('username')
-                                                     # 'exp': datetime.now() + timedelta(minutes=60)
                                                      })
-            mail_message = f"Click on this http://127.0.0.1:8000/user/verify/{token}"
-            send_mail(mail_subject,
-                      mail_message,
-                      settings.EMAIL_HOST_USER,
-                      [user_serializer.data.get("email")], fail_silently=False)
+            verify_user_task.delay(request.data.get('email'), token)
             return Response({"message": "Data save successfully ", "data": user_serializer.data}, status.HTTP_200_OK)
         except Exception as e:
             logging.exception(e)

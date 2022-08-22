@@ -1,17 +1,13 @@
-import jwt
 import logging
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from .serializers import UserSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from django.core.mail import send_mail
 from user.models import User
 from user.utils import JWTService
-from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from user.email import Email
 from .tasks import verify_user_task
 
 log = '%(lineno)d : %(asctime)s : %(message)s'

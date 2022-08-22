@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -14,3 +16,13 @@ class User(AbstractUser):
 
     class Meta:
         db_table = 'user'
+
+
+class Log(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
+    token = models.CharField(max_length=200, null=True)
+    created_at = models.DateTimeField(default=datetime.now, blank=True)
+
+    class Meta:
+        db_table = 'log'
+

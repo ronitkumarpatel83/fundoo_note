@@ -1,12 +1,13 @@
 import logging
 from note.models import Note
 from rest_framework.views import APIView
-from note.serializers import NotesSerializers
+from note.serializers import NotesSerializers, ShareNoteSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from note.utils import verify_token, RedisNoteAPI
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from user.models import User
 
 log = '%(lineno)d : %(asctime)s : %(message)s'
 logging.basicConfig(filename='logfile.log', filemode='a', format=log, level=logging.DEBUG)
@@ -98,3 +99,33 @@ class NoteDetails(APIView):
         except Exception as e:
             logging.exception(e)
             return Response({'message': 'unexpected error'}, status.HTTP_400_BAD_REQUEST)
+
+
+class CollaboratorAPIView(APIView):
+    @swagger_auto_schema(operation_summary="Fetch Collaborator note")
+    @verify_token
+    def get(self, request):
+        """
+        get note of user
+        """
+        try:
+            user = User.objects.get(id=request.data['user'])
+            note = user.collaborator.all() | Note.objects.filter(user_id=request.data['user'])
+            return Response({
+                "message": "user found", "data": ShareNoteSerializer(note, many=True).data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(operation_summary="Add Collaborator note")
+    @verify_token
+    def post(self, request):
+        try:
+            serializer = ShareNoteSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({"message": "User found", "data": serializer.data}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logging.exception(e)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

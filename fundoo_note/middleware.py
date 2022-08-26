@@ -14,10 +14,11 @@ class NoteMiddleware:
         logging.exception(exception)
 
     def __call__(self, request):
+        method_req = request.method
         token = request.META.get("HTTP_TOKEN")
         user_id = JWTService.decode_token(token).get('user_id')
         if user_id:
-            Log.objects.create(token=token, user_id_id=user_id)
+            Log.objects.create(method=method_req, user_id_id=user_id)
 
         response = self.get_response(request)
         return response

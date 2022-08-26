@@ -41,17 +41,19 @@ INSTALLED_APPS = [
     'rest_framework',
     'note',
     'drf_yasg',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fundoo_note.middleware.NoteMiddleware'
+    'fundoo_note.middleware.NoteMiddleware',
 ]
 
 ROOT_URLCONF = 'fundoo_note.urls'
@@ -171,3 +173,9 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Kolkata'
 CELERY_CACHE_BACKEND = 'default'
 BASE_URL = "http://127.0.0.1:8000"
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+]

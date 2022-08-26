@@ -20,7 +20,7 @@ class User(AbstractUser):
 
 class Log(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
-    token = models.CharField(max_length=200, null=True)
+    method = models.CharField(max_length=200)
     created_at = models.DateTimeField(default=datetime.now, blank=True)
 
     class Meta:

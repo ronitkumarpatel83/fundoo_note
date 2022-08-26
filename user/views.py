@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from .serializers import UserSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.serializers import ValidationError
 from user.models import User
 from user.utils import JWTService
 from drf_yasg import openapi
@@ -44,6 +45,9 @@ class RegistrationAPIView(APIView):
                                                      })
             verify_user_task.delay(request.data.get('email'), token)
             return Response({"message": "Data save successfully ", "data": user_serializer.data}, status.HTTP_200_OK)
+        except ValidationError as e:
+            logging.exception(e)
+            return Response({"message": "Duplicate data"}, status.HTTP_406_NOT_ACCEPTABLE)
         except Exception as e:
             logging.exception(e)
             return Response({"message": "Unexpected error"}, status.HTTP_400_BAD_REQUEST)
@@ -76,6 +80,8 @@ class LoginAPIView(APIView):
         try:
             info = request.data
             login_user = authenticate(username=info.get("username"), password=info.get("password"))
+            # user = User.objects.get(email=info.get("email"))
+            # user.check_password(info.get("password"))
             if login_user is not None:
                 token = JWTService.encode_token(payload={'user_id': login_user.id, 'username': login_user.username})
                 payload = {'token': token}

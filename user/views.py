@@ -1,6 +1,9 @@
 import logging
 from django.contrib.auth import authenticate
+from django.core.mail import send_mail
 from rest_framework.views import APIView
+
+from fundoo_note import settings
 from .serializers import UserSerializer
 from rest_framework.response import Response
 from rest_framework import status
@@ -43,7 +46,14 @@ class RegistrationAPIView(APIView):
             token = JWTService.encode_token(payload={'id': user_serializer.data.get("id"),
                                                      'username': user_serializer.data.get('username')
                                                      })
-            verify_user_task.delay(request.data.get('email'), token)
+            # verify_user_task.delay(request.data.get('email'), token)
+
+            mail_subject = "Verification mail from celery"
+            mail_message = f"Click on this http://127.0.0.1:8000/user/verify/{token}"
+            send_mail(mail_subject,
+                      mail_message,
+                      settings.EMAIL_HOST_USER,
+                      [user_serializer.data.get('email')], fail_silently=False)
             return Response({"message": "Data save successfully ", "data": user_serializer.data}, status.HTTP_200_OK)
         except ValidationError as e:
             logging.exception(e)

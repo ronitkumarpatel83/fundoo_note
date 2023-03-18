@@ -112,7 +112,8 @@ class CollaboratorAPIView(APIView):
         get note of user
         """
         try:
-            note = Note.objects.filter(Q(collaborator__id=request.data.get('user')) | Q(user_id=request.data['user']))
+            note = Note.objects.filter(Q(collaborator__id=request.data.get('user')) |
+                                       Q(user_id=request.data.get('user')))
             return Response({
                 "message": "user found", "data": ShareNoteSerializer(note, many=True).data
             }, status=status.HTTP_200_OK)
